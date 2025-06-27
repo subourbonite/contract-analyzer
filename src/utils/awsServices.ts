@@ -374,12 +374,14 @@ export const analyzeContractWithBedrock = async (
   console.log('=== END TEXT PREVIEW ===')
 
   const prompt = `
-Analyze the following oil and gas lease contract text and extract the requested information. Return your analysis in JSON format only, with no additional text or explanation.
+IMPORTANT: You must return ONLY valid JSON with no additional text, explanations, or markdown formatting. Do not wrap the JSON in code blocks or backticks.
+
+Analyze the following oil and gas lease contract text and extract the requested information:
 
 Contract text:
 ${text}
 
-Please extract and return the following information in this exact JSON structure:
+Return ONLY the following JSON structure with no additional text:
 {
   "lessors": ["array of lessor names"],
   "lessees": ["array of lessee names"],
@@ -391,7 +393,8 @@ Please extract and return the following information in this exact JSON structure
 }
 
 If any information is not found, use "Not found" as the value. For insights, provide analysis of any unusual terms, conditions, or clauses that differ from standard industry practices, and explain their potential impacts.
-`
+
+REMEMBER: Return ONLY valid JSON. No markdown, no explanations, no code blocks.`
 
   try {
     const command = new InvokeModelCommand({
