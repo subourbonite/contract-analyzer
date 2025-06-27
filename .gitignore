@@ -11,6 +11,15 @@ dist/
 dist-ssr/
 *.local
 
+# Vite cache (old location, now using OS temp)
+.vite-cache/
+.vite/
+
+# Windows temp cache directories (if they accidentally get created)
+vite-cache/
+.cache/
+cache/
+
 # CDK
 infrastructure/cdk.out/
 infrastructure/node_modules/

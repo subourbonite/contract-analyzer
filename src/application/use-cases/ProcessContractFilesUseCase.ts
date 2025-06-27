@@ -223,12 +223,13 @@ export class ProcessContractFilesUseCaseEnhanced extends ProcessContractFilesUse
   async executeWithDetailedResult(files: File[]): Promise<ProcessContractFilesResult> {
     try {
       const contracts = await this.execute(files)
+      const errors = this.extractErrorsFromContracts(contracts)
       const summary = this.generateSummary(contracts)
 
       return {
         success: true,
         contracts,
-        errors: [],
+        errors,
         summary
       }
     } catch (error) {
@@ -245,6 +246,26 @@ export class ProcessContractFilesUseCaseEnhanced extends ProcessContractFilesUse
         }
       }
     }
+  }
+
+  /**
+   * Extract errors from contract processing results
+   */
+  private extractErrorsFromContracts(contracts: ContractData[]): string[] {
+    const errors: string[] = []
+
+    contracts.forEach(contract => {
+      // Check if the contract has processing errors
+      if (contract.extractedText.includes('Error processing file')) {
+        errors.push(`Failed to extract text from ${contract.fileName}`)
+      }
+      // Only check for analysis errors if text extraction was successful
+      else if (ContractValidationService.hasProcessingErrors(contract.analysis)) {
+        errors.push(`Failed to analyze contract ${contract.fileName}`)
+      }
+    })
+
+    return errors
   }
 
   /**

@@ -240,3 +240,28 @@ For issues or questions:
 3. **Performance Optimization**: Monitor and optimize based on usage patterns
 4. **User Feedback**: Collect user feedback and iterate on features
 5. **Documentation**: Keep deployment and user documentation updated
+
+## Development Environment Setup
+
+### Local Development Issues and Solutions
+
+#### OneDrive Sync Conflicts (Windows)
+If your workspace is located in OneDrive, you may encounter permission issues with Vite's cache directory. This has been resolved by:
+
+- **Vite Cache Location**: Cache is now stored in the OS temp directory outside of OneDrive sync
+  - Windows: `%TEMP%\vite-cache\contract-analyzer`
+  - macOS/Linux: `/tmp/vite-cache/contract-analyzer`
+- **Cache Cleaning**: Use `npm run clean-cache` to clear the cache (works on all platforms)
+- **Gitignore**: All cache directories are properly ignored to prevent sync conflicts
+
+#### Cache Management Commands
+```bash
+# Clean Vite cache (cross-platform)
+npm run clean-cache
+
+# Start development server (cache will be recreated automatically)
+npm run dev
+
+# If you encounter any cache-related issues, try:
+npm run clean-cache && npm run dev
+```

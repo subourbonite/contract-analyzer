@@ -56,6 +56,7 @@
     "@aws-cdk/aws-opensearchservice:enableLogging": true,
     "@aws-cdk/aws-ssm:parameterValueType": true,
     "@aws-cdk/aws-lambda-nodejs:useLatestRuntimeVersion": true,
+    "@aws-cdk/aws-lambda-nodejs:defaultRuntime": "NODEJS_20_X",
     "@aws-cdk/aws-ecs:removeDefaultDeploymentAlarm": true,
     "@aws-cdk/aws-vpcLattice:addDefaultSecurityGroupIngressRule": true,
     "@aws-cdk/aws-rds:preventRenderingDeprecatedCredentials": true,

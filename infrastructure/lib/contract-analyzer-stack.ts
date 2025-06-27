@@ -4,6 +4,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as customResources from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
 export class ContractAnalyzerStack extends cdk.Stack {
@@ -194,6 +195,21 @@ def handler(event, context):
         CONTRACTS_BUCKET: contractsBucket.bucketName,
       },
     });
+
+    // Example: If you need to add Node.js Lambda functions in the future
+    // const nodeJsFunction = new lambda.Function(this, 'NodeJsProcessor', {
+    //   runtime: lambda.Runtime.NODEJS_20_X, // Use Node.js 20 instead of 18
+    //   handler: 'index.handler',
+    //   code: lambda.Code.fromInline(`
+    //     exports.handler = async (event) => {
+    //       console.log('Processing with Node.js 20');
+    //       return {
+    //         statusCode: 200,
+    //         body: JSON.stringify({ message: 'Node.js 20 Lambda executed successfully' })
+    //       };
+    //     };
+    //   `),
+    // });
 
     // Grant Lambda function permissions
     contractsBucket.grantReadWrite(contractProcessorFunction);
