@@ -5,6 +5,7 @@ import { FileUpload } from './components/FileUpload'
 import { ContractAnalysis } from './components/ContractAnalysis'
 import { Header } from './components/Header'
 import { ContractData } from './types/contract'
+import { createEnhancedContractProcessingUseCase, createDeleteContractUseCase } from './infrastructure/ServiceContainer'
 
 function App() {
   const { signOut, user } = useAuthenticator()
@@ -33,10 +34,23 @@ function App() {
     setIsAnalyzing(true)
     console.log('Processing files:', files.map(f => f.name))
     try {
-      // Process files and analyze contracts in parallel
-      const newContracts = await processContractFiles(files)
-      setContracts(prev => [...prev, ...newContracts])
-      console.log('Successfully processed contracts:', newContracts.length)
+      // Use the new clean architecture use case
+      const useCase = createEnhancedContractProcessingUseCase(
+        process.env.NODE_ENV === 'production' ? 'production' : 'development'
+      )
+
+      const result = await useCase.executeWithDetailedResult(files)
+
+      if (result.errors.length > 0) {
+        console.warn('Some files had processing errors:', result.errors)
+      }
+
+      setContracts(prev => [...prev, ...result.contracts])
+      console.log('Successfully processed contracts:', result.summary.successfullyProcessed)
+
+      if (result.summary.failed > 0) {
+        alert(`${result.summary.failed} files failed to process. Check console for details.`)
+      }
     } catch (error) {
       console.error('Error processing contracts:', error)
       alert('Error processing contracts. Please check the browser console for details.')
@@ -45,83 +59,40 @@ function App() {
     }
   }, [])
 
-  const processContractFiles = async (files: File[]): Promise<ContractData[]> => {
-    const { extractTextWithTextract, analyzeContractWithBedrock } = await import('./utils/awsServices')
-
-    console.log(`Processing ${files.length} files in parallel...`)
-
-    // Process all files in parallel
-    const processPromises = files.map(async (file, index) => {
-      let s3Key: string | undefined = undefined
-      try {
-        console.log(`Starting processing for file ${index + 1}/${files.length}: ${file.name}`)
-
-        // Extract text using AWS Textract (may upload to S3)
-        const extractedText = await extractTextWithTextract(file)
-
-        // For PDFs, assume they went through S3 upload
-        if (file.type === 'application/pdf') {
-          s3Key = `contracts/${Date.now()}-${file.name}` // Approximate key
-        }
-
-        console.log(`Text extraction completed for ${file.name}, starting Bedrock analysis...`)
-
-        // Analyze with AWS Bedrock
-        const analysis = await analyzeContractWithBedrock(extractedText, file.name)
-
-        console.log(`Successfully processed ${file.name}`)
-
-        return {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          fileName: file.name,
-          uploadDate: new Date(),
-          extractedText,
-          analysis,
-          s3Key
-        }
-      } catch (error) {
-        console.error(`Error processing file ${file.name}:`, error)
-        // Return contract with error status instead of throwing
-        return {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          fileName: file.name,
-          uploadDate: new Date(),
-          extractedText: `Error processing file: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          analysis: {
-            lessors: ['Error in processing'],
-            lessees: ['Error in processing'],
-            acreage: 'Error in processing',
-            depths: 'Error in processing',
-            term: 'Error in processing',
-            royalty: 'Error in processing',
-            insights: [`Failed to process ${file.name}. Please try again or contact support.`]
-          },
-          s3Key
-        }
-      }
-    })
-
-    // Wait for all files to complete processing
-    const results = await Promise.all(processPromises)
-    console.log(`Parallel processing completed: ${results.length} files processed`)
-
-    return results
-  }
-
   const handleDeleteContract = async (id: string) => {
     const contract = contracts.find(c => c.id === id)
-    if (contract?.s3Key) {
-      try {
-        const { deleteFileFromS3 } = await import('./utils/awsServices')
-        const bucketName = 'oil-gas-contracts-474668386339-us-east-1'
-        await deleteFileFromS3(contract.s3Key, bucketName)
-        console.log(`Cleaned up S3 file: ${contract.s3Key}`)
-      } catch (error) {
-        console.error('Failed to cleanup S3 file:', error)
-        // Continue with contract deletion even if S3 cleanup fails
-      }
+    if (!contract) {
+      console.error('Contract not found for deletion:', id)
+      return
     }
-    setContracts(prev => prev.filter(c => c.id !== id))
+
+    try {
+      // Use the new clean architecture use case for contract deletion
+      const deleteUseCase = createDeleteContractUseCase(
+        process.env.NODE_ENV === 'production' ? 'production' : 'development'
+      )
+
+      const result = await deleteUseCase.execute({
+        contractId: contract.id,
+        s3Key: contract.s3Key,
+        fileName: contract.fileName
+      })
+
+      if (result.success) {
+        setContracts(prev => prev.filter(c => c.id !== id))
+        console.log(`Successfully deleted contract: ${contract.fileName}`)
+
+        if (!result.s3CleanupSuccess && result.errors.length > 0) {
+          console.warn('Contract deleted but S3 cleanup had issues:', result.errors)
+        }
+      } else {
+        console.error('Failed to delete contract:', result.errors)
+        alert(`Failed to delete contract: ${result.errors.join(', ')}`)
+      }
+    } catch (error) {
+      console.error('Error deleting contract:', error)
+      alert('Error deleting contract. Please check the browser console for details.')
+    }
   }
 
   return (
