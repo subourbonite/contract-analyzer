@@ -221,9 +221,16 @@ export const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ onFilesU
                   </div>
 
                   <div className="flex items-center space-x-3 flex-shrink-0">
-                    <span className="text-xs text-green-600 bg-green-100 px-3 py-1.5 rounded-full font-medium whitespace-nowrap">
-                      Ready
-                    </span>
+                    {isAnalyzing ? (
+                      <span className="text-xs text-blue-600 bg-blue-100 px-3 py-1.5 rounded-full font-medium whitespace-nowrap flex items-center">
+                        <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
+                        Analyzing
+                      </span>
+                    ) : (
+                      <span className="text-xs text-green-600 bg-green-100 px-3 py-1.5 rounded-full font-medium whitespace-nowrap">
+                        Ready
+                      </span>
+                    )}
                     <button
                       onClick={() => removeFile(file)}
                       className={`transition-colors duration-200 p-1.5 rounded-full ${

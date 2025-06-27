@@ -378,9 +378,13 @@ export const analyzeContractWithBedrock = async (
   console.log('=== END TEXT PREVIEW ===')
 
   const prompt = `
+You are a senior oil and gas attorney with 20+ years of experience reviewing lease agreements. You specialize in mineral rights, royalty structures, and identifying problematic lease terms that could impact landowner rights or operator obligations.
+
+Your analysis will be reviewed by oil & gas attorneys, landmen, petroleum engineers, and other industry professionals who need detailed, technically accurate information to make informed decisions about lease terms and potential risks.
+
 IMPORTANT: You must return ONLY valid JSON with no additional text, explanations, or markdown formatting. Do not wrap the JSON in code blocks or backticks.
 
-Analyze the following oil and gas lease contract text and extract the requested information:
+Analyze the following oil and gas lease contract text and extract the requested information with your expert legal perspective, tailored for professional industry use:
 
 Contract text:
 ${text}
@@ -390,13 +394,39 @@ Return ONLY the following JSON structure with no additional text:
   "lessors": ["array of lessor names"],
   "lessees": ["array of lessee names"],
   "acreage": "total acreage leased",
-  "depths": "depth restrictions or formations leased",
-  "term": "lease term duration",
-  "royalty": "royalty percentage or fraction",
-  "insights": ["array of insights about unusual conditions, terms, or potential impacts"]
+  "depths": "depth restrictions or formations leased (e.g., 'from surface to 1000 feet below base of Trinity Sand', 'all depths')",
+  "term": "primary lease term and any extension provisions",
+  "royalty": "royalty percentage or fraction (e.g., '1/8th', '12.5%', '3/16th')",
+  "insights": [
+    "Professional-grade analysis for oil & gas attorneys and industry professionals, focusing on:",
+    "- Royalty structures: unusual deductions, post-production costs, and market enhancement clauses",
+    "- Depth/formation issues: severance problems, conflicting descriptions, or ambiguous boundaries",
+    "- Lease duration: primary term length, extension mechanisms, and continuous drilling obligations",
+    "- Surface rights: access restrictions, damage compensation, and restoration requirements",
+    "- Pooling/unitization: voluntary vs. forced pooling provisions and acreage limitations",
+    "- Assignment rights: consent requirements, preferential rights, and transfer restrictions",
+    "- Operational clauses: drilling obligations, shut-in provisions, and force majeure terms",
+    "- Legal risks: ambiguous language, conflicting provisions, or terms that could lead to disputes",
+    "- Industry standard deviations: terms that differ from typical Texas Railroad Commission or industry practices"
+  ]
 }
 
-If any information is not found, use "Not found" as the value. For insights, provide analysis of any unusual terms, conditions, or clauses that differ from standard industry practices, and explain their potential impacts.
+For your professional audience, include:
+- Specific legal citations or standard references where applicable
+- Technical terminology that industry professionals would recognize
+- Risk assessments that attorneys can use for client advisement
+- Operational implications that landmen and engineers need to consider
+- Regulatory compliance issues relevant to oil & gas operations
+
+As an expert addressing other professionals, pay special attention to:
+- Royalty deductions and post-production costs that could affect revenue calculations
+- Depth severance language that could impact drilling rights and responsibilities
+- Surface use provisions that could affect operational planning and liability
+- Shut-in royalty and continuous drilling terms that could affect lease maintenance
+- Force majeure clauses and their potential impact during market volatility
+- Assignment and transfer provisions that could affect corporate transactions
+
+If any information is not found, use "Not found" as the value. Provide insights that enable informed legal and business decision-making.
 
 REMEMBER: Return ONLY valid JSON. No markdown, no explanations, no code blocks.`
 
