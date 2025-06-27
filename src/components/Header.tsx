@@ -7,6 +7,23 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ user, onSignOut }) => {
+  // Helper function to get user display name
+  const getUserDisplayName = () => {
+    if (!user) return 'User'
+
+    // Try different paths to get user info
+    const email = user?.fetchedAttributes?.email || user?.attributes?.email || user?.signInDetails?.loginId
+    const username = user?.username || user?.signInDetails?.loginId
+
+    // If we have an email, extract the part before @ for a cleaner display
+    if (email && email.includes('@')) {
+      return email.split('@')[0]
+    }
+
+    // Fallback to username or email
+    return username || email || 'User'
+  }
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,8 +37,11 @@ export const Header: React.FC<HeaderProps> = ({ user, onSignOut }) => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 text-gray-600">
               <User className="h-4 w-4" />
-              <span className="text-sm">
-                {user?.attributes?.email || user?.username || 'User'}
+              <span
+                className="text-sm"
+                title={user?.fetchedAttributes?.email || user?.attributes?.email || user?.signInDetails?.loginId || 'User'}
+              >
+                {getUserDisplayName()}
               </span>
             </div>
 

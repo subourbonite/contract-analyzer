@@ -1,5 +1,5 @@
 import { TextractClient, DetectDocumentTextCommand, StartDocumentTextDetectionCommand, GetDocumentTextDetectionCommand } from '@aws-sdk/client-textract'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 import { fetchAuthSession } from 'aws-amplify/auth'
 
@@ -64,6 +64,10 @@ export const uploadFileToS3 = async (file: File, bucketName: string): Promise<st
       eTag: result.ETag,
       versionId: result.VersionId
     })
+
+    // Track the uploaded S3 key for contract cleanup
+    setLastUploadedS3Key(key)
+
     return key
   } catch (error) {
     console.error('S3 upload failed:', error)
@@ -500,4 +504,45 @@ export const extractTextWithSmartFallback = async (file: File): Promise<string> 
       throw new Error(`Extraction failed: Textract (${textractMessage}), Tesseract (${tesseractMessage})`)
     }
   }
+}
+
+export const deleteFileFromS3 = async (key: string, bucketName: string): Promise<void> => {
+  const { s3Client } = await createAWSClients()
+
+  console.log('Deleting file from S3:', {
+    bucket: bucketName,
+    key: key
+  })
+
+  try {
+    const command = new DeleteObjectCommand({
+      Bucket: bucketName,
+      Key: key
+    })
+
+    await s3Client.send(command)
+    console.log('S3 file deletion successful:', key)
+  } catch (error) {
+    console.error('S3 file deletion failed:', error)
+    console.error('Delete error details:', {
+      name: error instanceof Error ? error.name : 'Unknown',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      key: key,
+      bucket: bucketName
+    })
+    // Don't throw error for cleanup operations - log and continue
+  }
+}
+
+// Track the last uploaded S3 key for contract cleanup
+let lastUploadedS3Key: string | undefined = undefined
+
+export const getLastUploadedS3Key = (): string | undefined => {
+  const key = lastUploadedS3Key
+  lastUploadedS3Key = undefined // Clear after getting
+  return key
+}
+
+const setLastUploadedS3Key = (key: string) => {
+  lastUploadedS3Key = key
 }

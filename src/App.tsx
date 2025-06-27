@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useAuthenticator } from '@aws-amplify/ui-react'
+import { fetchUserAttributes } from 'aws-amplify/auth'
 import { FileUpload } from './components/FileUpload'
 import { ContractAnalysis } from './components/ContractAnalysis'
 import { Header } from './components/Header'
@@ -9,6 +10,24 @@ function App() {
   const { signOut, user } = useAuthenticator()
   const [contracts, setContracts] = useState<ContractData[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [userAttributes, setUserAttributes] = useState<any>(null)
+
+  // Fetch user attributes on component mount
+  useEffect(() => {
+    const getUserAttributes = async () => {
+      try {
+        const attributes = await fetchUserAttributes()
+        console.log('Fetched user attributes:', attributes)
+        setUserAttributes(attributes)
+      } catch (error) {
+        console.log('Error fetching user attributes:', error)
+      }
+    }
+
+    if (user) {
+      getUserAttributes()
+    }
+  }, [user])
 
   const handleFilesUploaded = useCallback(async (files: File[]) => {
     setIsAnalyzing(true)
@@ -27,13 +46,18 @@ function App() {
   }, [])
 
   const processContractFiles = async (files: File[]): Promise<ContractData[]> => {
-    const { extractTextWithTextract, analyzeContractWithBedrock } = await import('./utils/awsServices')
+    const { extractTextWithTextract, analyzeContractWithBedrock, getLastUploadedS3Key } = await import('./utils/awsServices')
     const processedContracts: ContractData[] = []
 
     for (const file of files) {
+      let s3Key: string | undefined = undefined
       try {
-        // Extract text using AWS Textract
+        // Extract text using AWS Textract (may upload to S3)
         const extractedText = await extractTextWithTextract(file)
+
+        // For PDFs and potentially other file types, check if an S3 upload happened
+        // by getting the last uploaded S3 key (this will be set if S3 upload occurred)
+        s3Key = getLastUploadedS3Key()
 
         // Analyze with AWS Bedrock
         const analysis = await analyzeContractWithBedrock(extractedText, file.name)
@@ -43,7 +67,8 @@ function App() {
           fileName: file.name,
           uploadDate: new Date(),
           extractedText,
-          analysis
+          analysis,
+          s3Key
         })
       } catch (error) {
         console.error(`Error processing file ${file.name}:`, error)
@@ -61,7 +86,8 @@ function App() {
             term: 'Error in processing',
             royalty: 'Error in processing',
             insights: [`Failed to process ${file.name}. Please try again or contact support.`]
-          }
+          },
+          s3Key
         })
       }
     }
@@ -69,9 +95,25 @@ function App() {
     return processedContracts
   }
 
+  const handleDeleteContract = async (id: string) => {
+    const contract = contracts.find(c => c.id === id)
+    if (contract?.s3Key) {
+      try {
+        const { deleteFileFromS3 } = await import('./utils/awsServices')
+        const bucketName = 'oil-gas-contracts-474668386339-us-east-1'
+        await deleteFileFromS3(contract.s3Key, bucketName)
+        console.log(`Cleaned up S3 file: ${contract.s3Key}`)
+      } catch (error) {
+        console.error('Failed to cleanup S3 file:', error)
+        // Continue with contract deletion even if S3 cleanup fails
+      }
+    }
+    setContracts(prev => prev.filter(c => c.id !== id))
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header user={user} onSignOut={signOut} />
+      <Header user={{ ...user, fetchedAttributes: userAttributes }} onSignOut={signOut} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -94,7 +136,7 @@ function App() {
           <div className="lg:col-span-2">
             <ContractAnalysis
               contracts={contracts}
-              onDeleteContract={(id) => setContracts(prev => prev.filter(c => c.id !== id))}
+              onDeleteContract={handleDeleteContract}
             />
           </div>
         </div>

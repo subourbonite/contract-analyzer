@@ -14,4 +14,5 @@ export interface ContractData {
   uploadDate: Date
   extractedText: string
   analysis: ContractAnalysisResult
+  s3Key?: string // Optional S3 key for cleanup
 }
