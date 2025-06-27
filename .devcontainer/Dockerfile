@@ -21,15 +21,26 @@ RUN apt-get update && apt-get install -y \
     tree \
     && rm -rf /var/lib/apt/lists/*
 
-# Install AWS CLI v2
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+# Install AWS CLI v2 with architecture detection
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        AWSCLI_ARCH="x86_64"; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        AWSCLI_ARCH="aarch64"; \
+    else \
+        AWSCLI_ARCH="x86_64"; \
+    fi && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-${AWSCLI_ARCH}.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && ./aws/install \
     && rm -rf awscliv2.zip aws/
 
-# Install specific versions of global npm packages
+# Update npm to latest version to avoid upgrade notices
+RUN npm install -g npm@latest
+
+# Install specific versions of global npm packages (as root before switching users)
 RUN npm install -g \
-    aws-cdk@2.87.0 \
+    aws-cdk@latest \
     @aws-amplify/cli@latest \
     typescript@5.0.2 \
     eslint@8.45.0 \
