@@ -34,6 +34,9 @@ infrastructure/node_modules/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
 .idea
 .DS_Store
 *.suo
