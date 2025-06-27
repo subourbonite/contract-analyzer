@@ -116,9 +116,27 @@ export class ContractAnalyzerStack extends cdk.Stack {
           'bedrock:InvokeModelWithResponseStream',
         ],
         resources: [
-          `arn:aws:bedrock:${cdk.Aws.REGION}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0`,
-          `arn:aws:bedrock:${cdk.Aws.REGION}::foundation-model/anthropic.claude-3-haiku-20240307-v1:0`,
-          `arn:aws:bedrock:${cdk.Aws.REGION}::foundation-model/amazon.titan-text-express-v1`,
+          // Inference profile ARN (this is region-specific)
+          `arn:aws:bedrock:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:inference-profile/us.anthropic.claude-sonnet-4-20250514-v1:0`,
+
+          // Foundation models in all regions that the Claude 4 Sonnet inference profile can route to
+          // us-east-1 models
+          'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0',
+          'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0',
+          'arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-haiku-20240307-v1:0',
+          'arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-text-express-v1',
+
+          // us-east-2 models (Claude 4 Sonnet inference profile can route here)
+          'arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0',
+          'arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0',
+          'arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-3-haiku-20240307-v1:0',
+          'arn:aws:bedrock:us-east-2::foundation-model/amazon.titan-text-express-v1',
+
+          // us-west-2 models (Claude 4 Sonnet inference profile can route here)
+          'arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-sonnet-4-20250514-v1:0',
+          'arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0',
+          'arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-3-haiku-20240307-v1:0',
+          'arn:aws:bedrock:us-west-2::foundation-model/amazon.titan-text-express-v1',
         ],
       })
     );
@@ -133,7 +151,7 @@ export class ContractAnalyzerStack extends cdk.Stack {
 
     // Lambda function for contract processing
     const contractProcessorFunction = new lambda.Function(this, 'ContractProcessor', {
-      runtime: lambda.Runtime.PYTHON_3_11,
+      runtime: lambda.Runtime.PYTHON_3_10,
       handler: 'index.handler',
       code: lambda.Code.fromInline(`
 import json

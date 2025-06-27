@@ -39,35 +39,55 @@ async function generateConfig() {
     // Generate Amplify configuration
     const amplifyConfig = {
       aws_project_region: outputMap.Region || 'us-east-1',
-      aws_cognito_identity_pool_id: outputMap.IdentityPoolId,
       aws_cognito_region: outputMap.Region || 'us-east-1',
       aws_user_pools_id: outputMap.UserPoolId,
       aws_user_pools_web_client_id: outputMap.UserPoolClientId,
-      oauth: {},
-      aws_cognito_username_attributes: ['email'],
-      aws_cognito_social_providers: [],
-      aws_cognito_signup_attributes: ['email'],
-      aws_cognito_mfa_configuration: 'OFF',
-      aws_cognito_mfa_types: ['SMS'],
-      aws_cognito_password_protection_settings: {
-        passwordPolicyMinLength: 8,
-        passwordPolicyCharacters: []
-      },
-      aws_cognito_verification_mechanisms: ['email'],
+      aws_cognito_identity_pool_id: outputMap.IdentityPoolId,
       aws_user_files_s3_bucket: outputMap.ContractsBucketName,
       aws_user_files_s3_bucket_region: outputMap.Region || 'us-east-1',
-      api_gateway_url: outputMap.ApiGatewayUrl
+      Auth: {
+        Cognito: {
+          userPoolId: outputMap.UserPoolId,
+          userPoolClientId: outputMap.UserPoolClientId,
+          identityPoolId: outputMap.IdentityPoolId,
+          loginWith: {
+            oauth: {
+              domain: "",
+              scopes: ["openid", "email", "profile"],
+              redirectSignIn: ["http://localhost:5173/"],
+              redirectSignOut: ["http://localhost:5173/"],
+              responseType: "code"
+            },
+            username: true,
+            email: true
+          }
+        }
+      },
+      Storage: {
+        S3: {
+          bucket: outputMap.ContractsBucketName,
+          region: outputMap.Region || 'us-east-1'
+        }
+      },
+      API: {
+        REST: {
+          ContractAnalyzer: {
+            endpoint: outputMap.ApiGatewayUrl,
+            region: outputMap.Region || 'us-east-1'
+          }
+        }
+      }
     };
 
     // Validate required values
     const requiredFields = [
-      'aws_cognito_identity_pool_id',
-      'aws_user_pools_id',
-      'aws_user_pools_web_client_id',
-      'aws_user_files_s3_bucket'
+      'IdentityPoolId',
+      'UserPoolId',
+      'UserPoolClientId',
+      'ContractsBucketName'
     ];
 
-    const missingFields = requiredFields.filter(field => !amplifyConfig[field]);
+    const missingFields = requiredFields.filter(field => !outputMap[field]);
     if (missingFields.length > 0) {
       throw new Error(`Missing required CDK outputs: ${missingFields.join(', ')}`);
     }

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useAuthenticator } from '@aws-amplify/ui-react'
 import { FileUpload } from './components/FileUpload'
 import { ContractAnalysis } from './components/ContractAnalysis'
@@ -12,12 +12,15 @@ function App() {
 
   const handleFilesUploaded = useCallback(async (files: File[]) => {
     setIsAnalyzing(true)
+    console.log('Processing files:', files.map(f => f.name))
     try {
       // Process files and analyze contracts
       const newContracts = await processContractFiles(files)
       setContracts(prev => [...prev, ...newContracts])
+      console.log('Successfully processed contracts:', newContracts.length)
     } catch (error) {
       console.error('Error processing contracts:', error)
+      alert('Error processing contracts. Please check the browser console for details.')
     } finally {
       setIsAnalyzing(false)
     }

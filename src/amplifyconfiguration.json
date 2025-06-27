@@ -1,20 +1,49 @@
 {
   "aws_project_region": "us-east-1",
-  "aws_cognito_identity_pool_id": "us-east-1:EXAMPLE-POOL-ID",
   "aws_cognito_region": "us-east-1",
-  "aws_user_pools_id": "us-east-1_EXAMPLE",
-  "aws_user_pools_web_client_id": "EXAMPLE_CLIENT_ID",
-  "oauth": {},
-  "aws_cognito_username_attributes": ["email"],
-  "aws_cognito_social_providers": [],
-  "aws_cognito_signup_attributes": ["email"],
-  "aws_cognito_mfa_configuration": "OFF",
-  "aws_cognito_mfa_types": ["SMS"],
-  "aws_cognito_password_protection_settings": {
-    "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": []
+  "aws_user_pools_id": "us-east-1_m2MnuBRkO",
+  "aws_user_pools_web_client_id": "3cvev7b9hba21jpovmsiefk545",
+  "aws_cognito_identity_pool_id": "us-east-1:8b6a3ce9-c761-4bae-a98f-5f5bb84ba9b3",
+  "aws_user_files_s3_bucket": "oil-gas-contracts-474668386339-us-east-1",
+  "aws_user_files_s3_bucket_region": "us-east-1",
+  "Auth": {
+    "Cognito": {
+      "userPoolId": "us-east-1_m2MnuBRkO",
+      "userPoolClientId": "3cvev7b9hba21jpovmsiefk545",
+      "identityPoolId": "us-east-1:8b6a3ce9-c761-4bae-a98f-5f5bb84ba9b3",
+      "loginWith": {
+        "oauth": {
+          "domain": "",
+          "scopes": [
+            "openid",
+            "email",
+            "profile"
+          ],
+          "redirectSignIn": [
+            "http://localhost:5173/"
+          ],
+          "redirectSignOut": [
+            "http://localhost:5173/"
+          ],
+          "responseType": "code"
+        },
+        "username": true,
+        "email": true
+      }
+    }
   },
-  "aws_cognito_verification_mechanisms": ["email"],
-  "aws_user_files_s3_bucket": "EXAMPLE-BUCKET",
-  "aws_user_files_s3_bucket_region": "us-east-1"
+  "Storage": {
+    "S3": {
+      "bucket": "oil-gas-contracts-474668386339-us-east-1",
+      "region": "us-east-1"
+    }
+  },
+  "API": {
+    "REST": {
+      "ContractAnalyzer": {
+        "endpoint": "https://jikx18dh3g.execute-api.us-east-1.amazonaws.com/prod/",
+        "region": "us-east-1"
+      }
+    }
+  }
 }
