@@ -2,6 +2,28 @@
 
 A modern React application built with TypeScript for analyzing oil and gas lease contracts using AWS services.
 
+## 🚀 Quick Start with Dev Container (Recommended)
+
+This project includes a pre-configured development container for VS Code that provides a consistent development environment with all necessary tools and dependencies.
+
+### Prerequisites
+- VS Code with the "Remote - Containers" extension
+- Docker Desktop
+
+### Setup
+1. Clone the repository
+2. Open in VS Code
+3. When prompted, click "Reopen in Container"
+4. Wait for the container to build and dependencies to install
+
+The dev container includes:
+- Node.js 20, npm, TypeScript
+- AWS CLI, AWS CDK, AWS Amplify CLI
+- All VS Code extensions and settings pre-configured
+- Automatic port forwarding for development servers
+
+📖 See [Dev Container README](.devcontainer/README.md) for detailed setup instructions.
+
 ## Features
 
 - **User Authentication**: Secure sign-in using AWS Cognito

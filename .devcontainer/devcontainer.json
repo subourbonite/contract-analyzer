@@ -1,0 +1,55 @@
+{
+  "name": "Contract Analyzer Dev Container",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+
+  // Configure tool-specific properties
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-json",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.vscode-eslint",
+        "amazonwebservices.aws-toolkit-vscode",
+        "ms-vscode.vscode-docker"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "typescript.preferences.quoteStyle": "double",
+        "javascript.preferences.quoteStyle": "double"
+      }
+    }
+  },
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally
+  "forwardPorts": [3000, 5173, 8080],
+
+  // Use 'postCreateCommand' to run commands after the container is created
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Configure container user
+  "remoteUser": "node",
+  
+  // Mount the local AWS credentials (optional, for development)
+  "mounts": [
+    "source=${localEnv:HOME}/.aws,target=/home/node/.aws,type=bind,consistency=cached"
+  ],
+
+  // Set environment variables
+  "containerEnv": {
+    "NODE_ENV": "development"
+  },
+
+  // Configure container lifecycle
+  "shutdownAction": "stopContainer"
+}

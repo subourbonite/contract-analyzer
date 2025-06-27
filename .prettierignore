@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.git/
+*.md
+*.json
+amplify/
+cdk.out/
+*.log
+*.lock
+.env*
+*.min.js
+*.min.css
