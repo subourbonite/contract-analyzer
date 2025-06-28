@@ -40,9 +40,14 @@
   // Configure container user
   "remoteUser": "node",
   
-  // Mount the local AWS credentials (optional, for development)
+  // Mount AWS credentials for development (cross-platform)
+  // Works on Windows (%USERPROFILE%) and macOS/Linux ($HOME)
   "mounts": [
-    "source=${localEnv:HOME}/.aws,target=/home/node/.aws,type=bind,consistency=cached"
+    {
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.aws",
+      "target": "/home/node/.aws",
+      "type": "bind"
+    }
   ],
 
   // Set environment variables
